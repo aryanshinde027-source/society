@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1083387654044",
+    "project_id": "smartsocietymanagement-e0b2d",
+    "storage_bucket": "smartsocietymanagement-e0b2d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083387654044:android:5a2335fb5a9dba6c09a259",
+        "android_client_info": {
+          "package_name": "com.example.society_management"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwMhmNxR950JHSr5cW87LJdOSJxtNfIHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
