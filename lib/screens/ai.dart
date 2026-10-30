@@ -10,20 +10,30 @@ class AiChatScreen extends StatefulWidget {
 
 class _AiChatScreenState extends State<AiChatScreen> {
   final AiService _service = AiService();
+
   final TextEditingController _messageController = TextEditingController();
+
+  final TextEditingController _residentController = TextEditingController();
+
   final ScrollController _scrollController = ScrollController();
 
   final List<Map<String, String>> _messages = [];
 
-  final Color bg = const Color(0xFF0B1120);
-  final Color surface = const Color(0xFF151F32);
-  final Color blue = const Color(0xFF60A5FA);
-  final Color muted = const Color(0xFF94A3B8);
-
-  final TextEditingController _residentController = TextEditingController();
+  static const Color bg = Color(0xFFF4F5FB);
+  static const Color navy = Color(0xFF172B50);
+  static const Color purple = Color(0xFF4936C8);
+  static const Color muted = Color(0xFF8992A4);
+  static const Color gold = Color(0xFFDDBB70);
 
   String? _conversationId;
   bool _loading = false;
+
+  final List<String> suggestions = [
+    'How do I report a water leak?',
+    'How can I check society notices?',
+    'How can I book a society facility?',
+    'How do I check maintenance payments?',
+  ];
 
   @override
   void dispose() {
@@ -54,6 +64,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
       _loading = true;
     });
 
+    _scrollToBottom();
+
     try {
       final response = await _service.sendMessage(
         residentId: residentId,
@@ -76,15 +88,20 @@ class _AiChatScreenState extends State<AiChatScreen> {
       _scrollToBottom();
     } catch (e) {
       if (!mounted) return;
+
       setState(() {
         _messages.add({
           'role': 'assistant',
           'message': 'Could not connect to AI. Please try again.',
         });
       });
+
       _showMessage('Chat failed: $e');
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+
       _scrollToBottom();
     }
   }
@@ -132,6 +149,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
       setState(() {
         _messages.clear();
+
         for (final item in history) {
           if (item is Map) {
             _messages.add({
@@ -150,7 +168,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
     } catch (e) {
       _showMessage('History failed: $e');
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -162,177 +182,488 @@ class _AiChatScreenState extends State<AiChatScreen> {
     });
   }
 
+  // WELCOME BANNER
+  Widget _welcomeBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF202D78), Color(0xFF4936C8), Color(0xFF5844E5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(29),
+        boxShadow: [
+          BoxShadow(
+            color: purple.withOpacity(0.15),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: 0,
+            top: 5,
+            child: Icon(
+              Icons.auto_awesome,
+              color: Colors.white.withOpacity(0.09),
+              size: 115,
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.13),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome, color: gold, size: 17),
+                    SizedBox(width: 9),
+                    Text(
+                      'SMART SOCIETY AI',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              const Text(
+                "I'm your AI Assistant",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w900,
+                  height: 1.25,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                'Ask me about your society, services, '
+                'notices and complaints.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+              ),
+
+              const SizedBox(height: 23),
+
+              const Row(
+                children: [
+                  Icon(Icons.bolt_rounded, color: gold, size: 22),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Smart Answers  •  Society Support',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // RESIDENT ID FIELD
+  Widget _residentField() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE2E6EF)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 52,
+            width: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFEDFF),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.person_outline_rounded,
+              color: purple,
+              size: 29,
+            ),
+          ),
+
+          const SizedBox(width: 13),
+
+          Expanded(
+            child: TextField(
+              controller: _residentController,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                color: navy,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'Resident ID',
+                hintStyle: TextStyle(color: muted, fontSize: 16),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+
+          const Icon(Icons.verified_user_outlined, color: muted, size: 28),
+        ],
+      ),
+    );
+  }
+
+  // SUGGESTION BUTTON
+  Widget _suggestionButton(String text) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _messageController.text = text;
+        });
+      },
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE1E5F0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: purple, size: 22),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: navy,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, color: muted, size: 17),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // EMPTY CHAT SCREEN
+  Widget _emptyChat() {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+
+        Container(
+          height: 112,
+          width: 112,
+          decoration: BoxDecoration(
+            color: const Color(0xFFECEAFF),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.smart_toy_rounded, color: purple, size: 75),
+        ),
+
+        const SizedBox(height: 18),
+
+        const Text(
+          'Start a Conversation',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: navy,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+
+        const SizedBox(height: 9),
+
+        const Text(
+          'Your friendly society assistant is ready to help!',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: muted, fontSize: 14, height: 1.5),
+        ),
+
+        const SizedBox(height: 30),
+
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'TRY ASKING...',
+            style: TextStyle(
+              color: navy,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 15),
+
+        ...suggestions.map(_suggestionButton),
+      ],
+    );
+  }
+
+  // CHAT MESSAGE BUBBLE
+  Widget _messageBubble(Map<String, String> item) {
+    final isUser = item['role'] == 'user';
+
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.82,
+        ),
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isUser ? purple : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(19),
+            topRight: const Radius.circular(19),
+            bottomLeft: Radius.circular(isUser ? 19 : 5),
+            bottomRight: Radius.circular(isUser ? 5 : 19),
+          ),
+          border: isUser ? null : Border.all(color: const Color(0xFFE5E7F0)),
+          boxShadow: [
+            BoxShadow(
+              color: navy.withOpacity(0.035),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isUser ? Icons.person_rounded : Icons.auto_awesome,
+                  color: isUser ? Colors.white : purple,
+                  size: 17,
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  isUser ? 'You' : 'Society AI',
+                  style: TextStyle(
+                    color: isUser ? Colors.white70 : purple,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              item['message'] ?? '',
+              style: TextStyle(
+                color: isUser ? Colors.white : navy,
+                fontSize: 14,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // BOTTOM MESSAGE INPUT
+  Widget _bottomInput() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(15, 13, 15, 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: const Color(0xFFE8EAF1))),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(35),
+                  border: Border.all(color: const Color(0xFFE5E7F0)),
+                ),
+                child: TextField(
+                  controller: _messageController,
+                  minLines: 1,
+                  maxLines: 4,
+                  onSubmitted: (_) => _sendMessage(),
+                  style: const TextStyle(color: navy, fontSize: 15),
+                  decoration: const InputDecoration(
+                    hintText: 'Type your message...',
+                    hintStyle: TextStyle(color: muted, fontSize: 15),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 21,
+                      vertical: 17,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 11),
+
+            SizedBox(
+              height: 58,
+              width: 58,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _sendMessage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: purple,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.zero,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(19),
+                  ),
+                ),
+                child: _loading
+                    ? const SizedBox(
+                        height: 23,
+                        width: 23,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.send_rounded, size: 27),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bg,
+
       appBar: AppBar(
         backgroundColor: bg,
-        foregroundColor: Colors.white,
-        title: const Row(
-          children: [
-            Icon(Icons.auto_awesome, color: Color(0xFFC084FC)),
-            SizedBox(width: 10),
-            Text('AI Assistant'),
-          ],
+        surfaceTintColor: bg,
+        elevation: 0,
+        toolbarHeight: 72,
+        foregroundColor: navy,
+        title: const Text(
+          'AI Assistant',
+          style: TextStyle(
+            color: navy,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+          ),
         ),
         actions: [
           IconButton(
-            tooltip: 'Load history',
+            tooltip: 'Chat History',
             onPressed: _loading ? null : _loadHistory,
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history_rounded, size: 28, color: navy),
           ),
           IconButton(
-            tooltip: 'New chat',
+            tooltip: 'New Chat',
             onPressed: _newConversation,
-            icon: const Icon(Icons.add_comment_outlined),
+            icon: const Icon(Icons.add_comment_outlined, size: 27, color: navy),
           ),
+          const SizedBox(width: 7),
         ],
       ),
+
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            color: surface,
-            child: TextField(
-              controller: _residentController,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: 'Resident ID',
-                labelStyle: TextStyle(color: muted),
-                prefixIcon: const Icon(
-                  Icons.person_outline,
-                  color: Colors.blue,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: muted.withValues(alpha: 0.3)),
-                ),
-              ),
-            ),
-          ),
           Expanded(
-            child: _messages.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(25),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.smart_toy_outlined,
-                            color: Color(0xFFC084FC),
-                            size: 70,
-                          ),
-                          const SizedBox(height: 18),
-                          const Text(
-                            'How can I help you?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Ask questions about society services, '
-                            'facilities, notices or complaints.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: muted),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final item = _messages[index];
-                      final isUser = item['role'] == 'user';
-
-                      return Align(
-                        alignment: isUser
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.82,
-                          ),
-                          margin: const EdgeInsets.only(bottom: 14),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: isUser ? blue : surface,
-                            borderRadius: BorderRadius.circular(17),
-                          ),
-                          child: Text(
-                            item['message'] ?? '',
-                            style: TextStyle(
-                              color: isUser ? bg : Colors.white,
-                              fontSize: 14,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          if (_loading)
-            const LinearProgressIndicator(
-              color: Color(0xFFC084FC),
-              backgroundColor: Color(0xFF151F32),
-            ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-            decoration: BoxDecoration(
-              color: surface,
-              border: Border(
-                top: BorderSide(color: muted.withValues(alpha: 0.15)),
-              ),
-            ),
-            child: Row(
+            child: ListView(
+              controller: _scrollController,
+              padding: const EdgeInsets.fromLTRB(17, 12, 17, 20),
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    minLines: 1,
-                    maxLines: 4,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Ask something...',
-                      hintStyle: TextStyle(color: muted),
-                      filled: true,
-                      fillColor: bg,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 12,
+                _welcomeBanner(),
+
+                const SizedBox(height: 24),
+
+                _residentField(),
+
+                if (_messages.isEmpty)
+                  _emptyChat()
+                else ...[
+                  const SizedBox(height: 25),
+
+                  const Text(
+                    'Your Conversation',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 21,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  ..._messages.map(_messageBubble),
+
+                  if (_loading)
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(color: purple),
                       ),
                     ),
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: _loading ? null : _sendMessage,
-                  style: IconButton.styleFrom(
-                    backgroundColor: blue,
-                    foregroundColor: bg,
-                  ),
-                  icon: const Icon(Icons.send_rounded),
-                ),
+                ],
               ],
             ),
           ),
+
+          if (_loading)
+            const LinearProgressIndicator(
+              color: purple,
+              backgroundColor: bg,
+              minHeight: 2,
+            ),
+
+          _bottomInput(),
         ],
       ),
     );

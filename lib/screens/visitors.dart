@@ -11,12 +11,16 @@ class VisitorsScreen extends StatefulWidget {
 class _VisitorsScreenState extends State<VisitorsScreen> {
   final VisitorService service = VisitorService();
 
-  static const Color background = Color(0xFF0B1120);
-  static const Color surface = Color(0xFF151F32);
-  static const Color blue = Color(0xFF60A5FA);
-  static const Color muted = Color(0xFF94A3B8);
+  // PROFESSIONAL THEME
+  static const Color background = Color(0xFFF3F5FA);
+  static const Color surface = Colors.white;
+  static const Color navy = Color(0xFF142F52);
+  static const Color blue = Color(0xFF244C80);
+  static const Color gold = Color(0xFFD9B66F);
+  static const Color muted = Color(0xFF8290A0);
 
   List<Map<String, dynamic>> visitors = [];
+
   bool loading = true;
   String? error;
   String searchQuery = '';
@@ -27,6 +31,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     loadVisitors();
   }
 
+  // LOAD VISITORS
   Future<void> loadVisitors() async {
     setState(() {
       loading = true;
@@ -35,6 +40,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
 
     try {
       final data = await service.getAllVisitors();
+
       if (!mounted) return;
 
       setState(() {
@@ -43,6 +49,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+
       setState(() {
         error = e.toString();
         loading = false;
@@ -59,7 +66,9 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
 
     try {
       final date = DateTime.parse(value.toString()).toLocal();
+
       String two(int n) => n.toString().padLeft(2, '0');
+
       return '${two(date.day)}/${two(date.month)}/${date.year} '
           '${two(date.hour)}:${two(date.minute)}';
     } catch (_) {
@@ -67,8 +76,10 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     }
   }
 
+  // SEARCH
   List<Map<String, dynamic>> get filteredVisitors {
     final query = searchQuery.trim().toLowerCase();
+
     if (query.isEmpty) return visitors;
 
     return visitors.where((v) {
@@ -84,24 +95,25 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     }).toList();
   }
 
+  // INPUT DECORATION
   InputDecoration decoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(color: muted),
-      prefixIcon: Icon(icon, color: blue),
+      prefixIcon: Icon(icon, color: gold),
       filled: true,
       fillColor: background,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(13),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: muted.withValues(alpha: 0.2)),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: Color(0xFFE3E8EF)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: blue),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: blue, width: 1.5),
       ),
     );
   }
@@ -115,7 +127,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: navy),
       decoration: decoration(label, icon),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
@@ -126,30 +138,38 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     );
   }
 
+  // ADD / UPDATE VISITOR
   Future<void> openForm({Map<String, dynamic>? visitor}) async {
     final formKey = GlobalKey<FormState>();
 
     final name = TextEditingController(
       text: visitor?['name']?.toString() ?? '',
     );
+
     final mobile = TextEditingController(
       text: visitor?['mobile']?.toString() ?? '',
     );
+
     final email = TextEditingController(
       text: visitor?['email']?.toString() ?? '',
     );
+
     final purpose = TextEditingController(
       text: visitor?['purpose']?.toString() ?? '',
     );
+
     final entryDate = TextEditingController(
       text: visitor?['entryDate']?.toString() ?? currentDateTime(),
     );
+
     final exitDate = TextEditingController(
       text: visitor?['exitDate']?.toString() ?? currentDateTime(),
     );
+
     final flatId = TextEditingController(
       text: visitor?['flatId']?.toString() ?? '',
     );
+
     final residentId = TextEditingController(
       text: visitor?['residentId']?.toString() ?? '',
     );
@@ -163,11 +183,15 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
               title: Text(
                 visitor == null ? 'Register Visitor' : 'Edit Visitor',
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                  color: navy,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 21,
                 ),
               ),
               content: SizedBox(
@@ -184,6 +208,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                           icon: Icons.person_outline,
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: mobile,
                           label: 'Mobile number',
@@ -191,6 +216,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                           keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: email,
                           label: 'Email address',
@@ -198,18 +224,21 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                           keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: purpose,
                           label: 'Purpose of visit',
                           icon: Icons.assignment_outlined,
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: entryDate,
                           label: 'Entry date-time (ISO)',
                           icon: Icons.login_rounded,
                         ),
                         const SizedBox(height: 6),
+
                         const Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -218,12 +247,14 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: exitDate,
                           label: 'Exit date-time (ISO)',
                           icon: Icons.logout_rounded,
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: flatId,
                           label: 'Flat ID',
@@ -231,6 +262,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                           keyboardType: TextInputType.number,
                         ),
                         const SizedBox(height: 12),
+
                         field(
                           controller: residentId,
                           label: 'Resident ID',
@@ -247,17 +279,24 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                   onPressed: saving ? null : () => Navigator.pop(dialogContext),
                   child: const Text('Cancel', style: TextStyle(color: muted)),
                 ),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: blue,
-                    foregroundColor: background,
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: gold,
+                    foregroundColor: navy,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: saving
                       ? null
                       : () async {
-                          if (!formKey.currentState!.validate()) return;
+                          if (!formKey.currentState!.validate()) {
+                            return;
+                          }
 
                           final parsedFlatId = int.tryParse(flatId.text.trim());
+
                           final parsedResidentId = int.tryParse(
                             residentId.text.trim(),
                           );
@@ -319,10 +358,12 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                             }
 
                             if (!mounted) return;
+
                             Navigator.pop(dialogContext);
                             await loadVisitors();
 
                             if (!mounted) return;
+
                             ScaffoldMessenger.of(this.context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -330,13 +371,19 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                                       ? 'Visitor registered successfully'
                                       : 'Visitor updated successfully',
                                 ),
+                                backgroundColor: Colors.green,
                               ),
                             );
                           } catch (e) {
                             setDialogState(() => saving = false);
+
                             if (!mounted) return;
+
                             ScaffoldMessenger.of(this.context).showSnackBar(
-                              SnackBar(content: Text('Request failed: $e')),
+                              SnackBar(
+                                content: Text('Request failed: $e'),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                           }
                         },
@@ -365,6 +412,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     residentId.dispose();
   }
 
+  // DELETE VISITOR
   Future<void> deleteVisitor(Map<String, dynamic> visitor) async {
     final id = (visitor['visid'] as num).toInt();
 
@@ -372,9 +420,10 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Delete visitor?',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: navy, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'Delete ${visitor['name'] ?? 'this visitor'} from records?',
@@ -385,8 +434,11 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel', style: TextStyle(color: muted)),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
@@ -401,17 +453,39 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
       await loadVisitors();
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Visitor deleted successfully')),
+        const SnackBar(
+          content: Text('Visitor deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Delete failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
+  // VISITOR DETAIL ROW
+  Widget detail(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 17, color: gold),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Text(text, style: const TextStyle(color: muted, fontSize: 13)),
+        ),
+      ],
+    );
+  }
+
+  // VISITOR CARD
   Widget visitorCard(Map<String, dynamic> visitor) {
     final id = visitor['visid']?.toString() ?? '-';
     final name = visitor['name']?.toString() ?? 'Unknown visitor';
@@ -424,12 +498,19 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     final resident = visitor['residentId']?.toString() ?? '-';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5EAF0)),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.045),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,18 +518,19 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(11),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: blue.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(13),
+                  color: const Color(0xFFFFF5DF),
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: const Icon(
-                  Icons.person_pin_circle_outlined,
-                  color: blue,
-                  size: 28,
+                  Icons.person_pin_circle_rounded,
+                  color: gold,
+                  size: 29,
                 ),
               ),
               const SizedBox(width: 12),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,12 +538,12 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                     Text(
                       name,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        color: navy,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 17,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Text(
                       'Visitor #$id',
                       style: const TextStyle(color: muted, fontSize: 12),
@@ -469,6 +551,7 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                   ],
                 ),
               ),
+
               PopupMenuButton<String>(
                 color: surface,
                 icon: const Icon(Icons.more_vert, color: muted),
@@ -482,36 +565,57 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                 itemBuilder: (context) => const [
                   PopupMenuItem(
                     value: 'edit',
-                    child: Text('Edit', style: TextStyle(color: Colors.white)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, color: blue),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ],
+                    ),
                   ),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.redAccent),
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: Colors.redAccent),
+                        SizedBox(width: 8),
+                        Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ],
           ),
+
+          const SizedBox(height: 17),
+
+          detail(Icons.phone_outlined, mobile),
+          const SizedBox(height: 10),
+
+          detail(Icons.email_outlined, email),
+          const SizedBox(height: 10),
+
+          detail(Icons.info_outline_rounded, purpose),
+
           const SizedBox(height: 15),
-          _detail(Icons.phone_outlined, mobile),
-          const SizedBox(height: 8),
-          _detail(Icons.email_outlined, email),
-          const SizedBox(height: 8),
-          _detail(Icons.info_outline, purpose),
-          const SizedBox(height: 14),
-          Divider(color: muted.withValues(alpha: 0.15)),
-          _detail(Icons.login_rounded, 'Entry: $entry'),
-          const SizedBox(height: 8),
-          _detail(Icons.logout_rounded, 'Exit: $exit'),
-          const SizedBox(height: 8),
+          const Divider(color: Color(0xFFEDF0F5)),
+          const SizedBox(height: 12),
+
+          detail(Icons.login_rounded, 'Entry: $entry'),
+          const SizedBox(height: 10),
+
+          detail(Icons.logout_rounded, 'Exit: $exit'),
+          const SizedBox(height: 10),
+
           Row(
             children: [
-              Expanded(child: _detail(Icons.apartment, 'Flat: $flat')),
+              Expanded(child: detail(Icons.apartment_rounded, 'Flat: $flat')),
               Expanded(
-                child: _detail(Icons.badge_outlined, 'Resident: $resident'),
+                child: detail(Icons.badge_outlined, 'Resident: $resident'),
               ),
             ],
           ),
@@ -520,156 +624,256 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
     );
   }
 
-  Widget _detail(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 17, color: muted),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(text, style: const TextStyle(color: muted, fontSize: 12)),
+  // WELCOME BANNER
+  Widget visitorBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF142E51), Color(0xFF234777)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ],
+        borderRadius: BorderRadius.circular(29),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.12),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: 0,
+            top: 5,
+            child: Icon(
+              Icons.groups_rounded,
+              size: 125,
+              color: Colors.white.withOpacity(0.07),
+            ),
+          ),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'V I S I T O R  M A N A G E M E N T',
+                style: TextStyle(
+                  color: gold,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.3,
+                ),
+              ),
+
+              const SizedBox(height: 35),
+
+              const Text(
+                'Welcome Every Guest.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 13),
+
+              const Text(
+                'Keep visitor details organized in one place.',
+                style: TextStyle(
+                  color: Color(0xFFD4DFEF),
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+              ),
+
+              const SizedBox(height: 37),
+
+              Row(
+                children: [
+                  const Icon(Icons.people_alt_outlined, color: gold, size: 23),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${visitors.length} visitors added',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
+  // MAIN SCREEN
   @override
   Widget build(BuildContext context) {
+    final visibleVisitors = filteredVisitors;
+
     return Scaffold(
       backgroundColor: background,
+
       appBar: AppBar(
-        backgroundColor: background,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: navy,
         elevation: 0,
+        surfaceTintColor: Colors.white,
+        titleSpacing: 8,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, size: 27),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
-          'Visitor Management',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Visitors',
+          style: TextStyle(
+            color: navy,
+            fontWeight: FontWeight.w900,
+            fontSize: 24,
+          ),
         ),
         actions: [
           IconButton(
             tooltip: 'Refresh',
             onPressed: loadVisitors,
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(Icons.refresh_rounded, color: navy, size: 28),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 7),
         ],
       ),
+
+      // ADD VISITOR BUTTON
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openForm(),
-        backgroundColor: blue,
-        foregroundColor: background,
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('Register Visitor'),
+        backgroundColor: gold,
+        foregroundColor: navy,
+        elevation: 7,
+        icon: const Icon(Icons.person_add_alt_1_rounded, size: 25),
+        label: const Text(
+          'Add Visitor',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
       ),
+
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: loadVisitors,
+          color: navy,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+            padding: const EdgeInsets.fromLTRB(17, 20, 17, 110),
             children: [
+              // BANNER
+              visitorBanner(),
+
+              const SizedBox(height: 25),
+
+              // SEARCH BAR
               Container(
-                padding: const EdgeInsets.all(21),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1D4ED8), Color(0xFF4338CA)],
-                  ),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome Your Guests',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Register visitors and keep track of entry '
-                            'and exit details.',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              height: 1.5,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    Icon(
-                      Icons.directions_walk_rounded,
-                      size: 44,
-                      color: Colors.white,
-                    ),
+                  color: surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE3E8EF)),
+                  boxShadow: [
+                    BoxShadow(color: navy.withOpacity(0.025), blurRadius: 10),
                   ],
                 ),
+                child: TextField(
+                  style: const TextStyle(color: navy, fontSize: 16),
+                  onChanged: (value) {
+                    setState(() => searchQuery = value);
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search by name, flat or purpose...',
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF8793A2),
+                      fontSize: 15,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: navy,
+                      size: 29,
+                    ),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            onPressed: () {
+                              setState(() => searchQuery = '');
+                            },
+                            icon: const Icon(Icons.close, color: muted),
+                          )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 23,
+                      horizontal: 15,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
               ),
-              const SizedBox(height: 23),
+
+              const SizedBox(height: 27),
+
+              // VISITOR RECORDS HEADING
               Row(
                 children: [
                   const Expanded(
                     child: Text(
                       'Visitor Records',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        color: navy,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                   ),
                   Text(
-                    '${visitors.length} total',
-                    style: const TextStyle(color: muted),
+                    '${visibleVisitors.length} found',
+                    style: const TextStyle(color: muted, fontSize: 14),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                style: const TextStyle(color: Colors.white),
-                onChanged: (value) => setState(() => searchQuery = value),
-                decoration: InputDecoration(
-                  hintText: 'Search visitors...',
-                  hintStyle: const TextStyle(color: muted),
-                  prefixIcon: const Icon(Icons.search, color: muted),
-                  filled: true,
-                  fillColor: surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
+
+              const SizedBox(height: 19),
+
+              // LOADING
               if (loading)
                 const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
+                  padding: EdgeInsets.all(35),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: navy,
+                      strokeWidth: 3,
+                    ),
+                  ),
                 )
+              // ERROR
               else if (error != null)
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     color: surface,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Column(
                     children: [
                       const Icon(
                         Icons.cloud_off_rounded,
-                        color: Colors.orangeAccent,
-                        size: 42,
+                        size: 48,
+                        color: Colors.orange,
                       ),
                       const SizedBox(height: 12),
                       const Text(
                         'Unable to load visitors',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: navy,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -680,33 +884,49 @@ class _VisitorsScreenState extends State<VisitorsScreen> {
                         style: const TextStyle(color: muted),
                       ),
                       const SizedBox(height: 12),
-                      FilledButton(
+                      ElevatedButton.icon(
                         onPressed: loadVisitors,
-                        child: const Text('Try Again'),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: navy,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                     ],
                   ),
                 )
-              else if (filteredVisitors.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(28),
+              // EMPTY
+              else if (visibleVisitors.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: surface,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                   child: Column(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.people_outline_rounded,
-                        size: 54,
-                        color: muted,
+                        size: 55,
+                        color: gold,
                       ),
-                      SizedBox(height: 12),
+                      const SizedBox(height: 12),
                       Text(
-                        'No visitor records found',
-                        style: TextStyle(color: muted),
+                        searchQuery.isEmpty
+                            ? 'No visitor records found'
+                            : 'No matching visitors found',
+                        style: const TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 )
+              // VISITOR LIST
               else
-                ...filteredVisitors.map(visitorCard),
+                ...visibleVisitors.map(visitorCard),
             ],
           ),
         ),

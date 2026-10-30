@@ -12,7 +12,7 @@ class ResidentFacilityBookingScreen extends StatefulWidget {
 
 class _ResidentFacilityBookingScreenState
     extends State<ResidentFacilityBookingScreen> {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://172.31.141.202:8080';
 
   static const Color blue = Color(0xFF2563EB);
   static const Color navy = Color(0xFF12345A);

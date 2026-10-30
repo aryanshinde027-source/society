@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ComplaintService {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://172.31.141.202:8080';
 
   Map<String, dynamic> _decodeObject(http.Response response) {
     final decoded = jsonDecode(response.body);

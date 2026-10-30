@@ -14,6 +14,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isEditing = false;
   bool isSaving = false;
 
+  static const Color navy = Color(0xFF14294E);
+  static const Color navyLight = Color(0xFF203D6B);
+  static const Color gold = Color(0xFFDDBB70);
+  static const Color bg = Color(0xFFF4F6FB);
+  static const Color muted = Color(0xFF8490A0);
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       await FirebaseAuth.instance.currentUser?.updateDisplayName(name);
+
       await FirebaseAuth.instance.currentUser?.reload();
 
       if (!mounted) return;
@@ -63,101 +70,291 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // PROFILE HEADER
+  Widget profileHeader(User user) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [navy, navyLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: gold, width: 2.5),
+            ),
+            child: const CircleAvatar(
+              radius: 67,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: navy, size: 78),
+            ),
+          ),
+
+          const SizedBox(height: 35),
+
+          Text(
+            user.displayName?.isNotEmpty == true
+                ? user.displayName!
+                : 'Society Resident',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 27,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 13),
+
+          Text(
+            user.email ?? 'No email available',
+            style: const TextStyle(color: Color(0xFFD0D9E8), fontSize: 16),
+          ),
+
+          const SizedBox(height: 30),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 19, vertical: 11),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: gold.withOpacity(0.7)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.verified_user_outlined, color: gold, size: 23),
+                SizedBox(width: 10),
+                Text(
+                  'Society Member',
+                  style: TextStyle(
+                    color: gold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // INFORMATION CARD
+  Widget infoCard({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE3E8EF)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 70,
+            width: 70,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3EEDF),
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: Icon(icon, color: navy, size: 30),
+          ),
+
+          const SizedBox(width: 18),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(color: muted, fontSize: 15)),
+
+                const SizedBox(height: 7),
+
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: navy,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // EDIT NAME FIELD
+  Widget editNameField() {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE3E8EF)),
+      ),
+      child: TextField(
+        controller: nameController,
+        style: const TextStyle(color: navy, fontWeight: FontWeight.w700),
+        decoration: const InputDecoration(
+          labelText: 'Full Name',
+          prefixIcon: Icon(Icons.person_outline, color: navy),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  // LOGOUT
+  Future<void> logout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Logout',
+          style: TextStyle(color: navy, fontWeight: FontWeight.bold),
+        ),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: navy,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await FirebaseAuth.instance.signOut();
+    }
+  }
+
+  // MAIN BUILD
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
+      backgroundColor: bg,
+
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: navy,
+        toolbarHeight: 65,
         title: const Text(
           'My Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: navy,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+          ),
         ),
-        backgroundColor: const Color(0xFF2563EB),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: user == null
           ? const Center(child: Text('Please login first'))
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(18, 25, 18, 35),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  // PROFILE HEADER
+                  profileHeader(user),
 
-                  const CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Color(0xFFDBEAFE),
-                    child: Icon(
-                      Icons.person,
-                      size: 65,
-                      color: Color(0xFF2563EB),
+                  const SizedBox(height: 55),
+
+                  // PERSONAL INFORMATION
+                  const Text(
+                    'Personal Information',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
 
-                  Text(
-                    user.displayName?.isNotEmpty == true
-                        ? user.displayName!
-                        : 'Society Resident',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  const Text(
+                    'Manage your account details',
+                    style: TextStyle(color: muted, fontSize: 16),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // INFORMATION CONTAINER
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(27),
+                      border: Border.all(color: const Color(0xFFE6EAF0)),
+                    ),
+                    child: Column(
+                      children: [
+                        if (isEditing)
+                          editNameField()
+                        else
+                          infoCard(
+                            icon: Icons.person_outline,
+                            title: 'Full Name',
+                            value: user.displayName?.isNotEmpty == true
+                                ? user.displayName!
+                                : 'Society Resident',
+                          ),
+
+                        const SizedBox(height: 17),
+
+                        infoCard(
+                          icon: Icons.mail_outline,
+                          title: 'Email Address',
+                          value: user.email ?? 'No email available',
+                        ),
+                      ],
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 23),
 
-                  Text(
-                    user.email ?? 'No email available',
-                    style: const TextStyle(color: Colors.grey, fontSize: 15),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Personal Information',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  TextField(
-                    controller: nameController,
-                    enabled: isEditing,
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  TextField(
-                    readOnly: true,
-                    controller: TextEditingController(text: user.email ?? ''),
-                    decoration: InputDecoration(
-                      labelText: 'Email Address',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
+                  // EDIT PROFILE BUTTON
                   SizedBox(
                     width: double.infinity,
+                    height: 62,
                     child: ElevatedButton.icon(
                       onPressed: isSaving
                           ? null
@@ -165,69 +362,103 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               if (isEditing) {
                                 saveProfile();
                               } else {
-                                setState(() => isEditing = true);
+                                nameController.text = user.displayName ?? '';
+                                setState(() {
+                                  isEditing = true;
+                                });
                               }
                             },
                       icon: isSaving
                           ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: navy,
+                                strokeWidth: 2,
+                              ),
                             )
-                          : Icon(isEditing ? Icons.save : Icons.edit),
+                          : Icon(
+                              isEditing
+                                  ? Icons.save_outlined
+                                  : Icons.edit_outlined,
+                            ),
                       label: Text(
                         isSaving
                             ? 'Saving...'
                             : isEditing
                             ? 'Save Changes'
                             : 'Edit Profile',
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(16),
+                        backgroundColor: gold,
+                        foregroundColor: navy,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(19),
+                        ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 50),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Logout'),
-                            content: const Text(
-                              'Are you sure you want to logout?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, true),
-                                child: const Text('Logout'),
-                              ),
-                            ],
-                          ),
-                        );
+                  // ACCOUNT SETTINGS
+                  const Text(
+                    'Account Settings',
+                    style: TextStyle(
+                      color: navy,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
 
-                        if (confirm == true) {
-                          await FirebaseAuth.instance.signOut();
-                        }
-                      },
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Logout'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        padding: const EdgeInsets.all(16),
+                  const SizedBox(height: 20),
+
+                  // LOGOUT CARD
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE6EAF0)),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
                       ),
+                      leading: Container(
+                        height: 45,
+                        width: 45,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEEEE),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.red,
+                        ),
+                      ),
+                      title: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Sign out from your account',
+                        style: TextStyle(color: muted),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios,
+                        color: muted,
+                        size: 17,
+                      ),
+                      onTap: logout,
                     ),
                   ),
                 ],

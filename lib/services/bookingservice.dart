@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class BookingService {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://172.31.141.202:8080';
 
   void _check(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {

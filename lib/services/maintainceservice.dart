@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class MaintainceService {
   // Android emulator URL.
   // Physical phone asel tar computer cha LAN IP vapra.
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://172.31.141.202:8080';
 
   void _checkResponse(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {

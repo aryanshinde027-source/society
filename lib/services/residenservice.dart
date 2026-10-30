@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class ResidentService {
   // Android Emulator. Change port/context path if needed.
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://172.31.141.202:8080';
 
   Map<String, dynamic> _decodeObject(String body) {
     return jsonDecode(body) as Map<String, dynamic>;

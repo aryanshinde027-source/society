@@ -12,10 +12,11 @@ class ResidentMaintenanceScreen extends StatefulWidget {
 class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
   final MaintainceService service = MaintainceService();
 
-  final Color background = const Color(0xFF0B1120);
-  final Color surface = const Color(0xFF151F32);
-  final Color blue = const Color(0xFF60A5FA);
-  final Color muted = const Color(0xFF94A3B8);
+  static const Color navy = Color(0xFF14294E);
+  static const Color navyLight = Color(0xFF294B80);
+  static const Color gold = Color(0xFFDDBB70);
+  static const Color background = Color(0xFFF4F6FB);
+  static const Color muted = Color(0xFF8490A0);
 
   List<Map<String, dynamic>> records = [];
   bool loading = true;
@@ -90,17 +91,78 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
     }).toList();
   }
 
+  int get paidCount => records
+      .where(
+        (r) => (r['paymentStatus'] ?? '').toString().toLowerCase() == 'paid',
+      )
+      .length;
+
+  int get pendingCount => records
+      .where(
+        (r) => (r['paymentStatus'] ?? '').toString().toLowerCase() != 'paid',
+      )
+      .length;
+
   Color statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'paid':
-        return Colors.greenAccent;
+        return Colors.green;
       case 'overdue':
-        return Colors.redAccent;
+        return Colors.red;
       default:
-        return Colors.orangeAccent;
+        return Colors.orange.shade800;
     }
   }
 
+  // STATISTIC CARD
+  Widget statCard({
+    required IconData icon,
+    required String count,
+    required String title,
+  }) {
+    return Expanded(
+      child: Container(
+        height: 165,
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: const Color(0xFFE4E8EF)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 55,
+              width: 55,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4EEDF),
+                borderRadius: BorderRadius.circular(17),
+              ),
+              child: Icon(icon, color: navy, size: 27),
+            ),
+
+            const SizedBox(height: 14),
+
+            Text(
+              count,
+              style: const TextStyle(
+                color: navy,
+                fontSize: 29,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(title, style: const TextStyle(color: muted, fontSize: 13)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // DETAIL ROW
   Widget detailRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -109,16 +171,19 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
           Icon(icon, color: muted, size: 19),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(label, style: TextStyle(color: muted, fontSize: 14)),
+            child: Text(
+              label,
+              style: const TextStyle(color: muted, fontSize: 14),
+            ),
           ),
-          const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.end,
               style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+                color: navy,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
               ),
             ),
           ),
@@ -127,6 +192,7 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
     );
   }
 
+  // MAINTENANCE RECORD CARD
   Widget maintenanceCard(Map<String, dynamic> record) {
     final id = record['maintainceid']?.toString() ?? '-';
     final flatId = getFlatId(record)?.toString() ?? 'Not provided';
@@ -139,9 +205,16 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE4E8EF)),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,12 +224,18 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: blue.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xFFF4EEDF),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                child: Icon(Icons.receipt_long, color: blue, size: 25),
+                child: const Icon(
+                  Icons.receipt_long_rounded,
+                  color: navy,
+                  size: 25,
+                ),
               ),
+
               const SizedBox(width: 12),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,51 +243,58 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
                     Text(
                       'Maintenance #$id',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: navy,
                         fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     const SizedBox(height: 5),
                     Text(
                       'Flat ID: $flatId',
-                      style: TextStyle(
-                        color: blue,
+                      style: const TextStyle(
+                        color: muted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
+
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
+                  horizontal: 11,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: statusColor(status).withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(20),
+                  color: statusColor(status).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(25),
                 ),
                 child: Text(
                   status,
                   style: TextStyle(
                     color: statusColor(status),
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 18),
-          Divider(color: muted.withValues(alpha: 0.2)),
-          const SizedBox(height: 12),
+
+          const SizedBox(height: 15),
+
+          const Divider(color: Color(0xFFE8ECF2)),
+
+          const SizedBox(height: 15),
+
           detailRow(Icons.currency_rupee, 'Maintenance Amount', '₹$amount'),
+
           detailRow(
             Icons.account_balance_wallet_outlined,
             'Amount Due',
             '₹$due',
           ),
+
           detailRow(Icons.calendar_month_outlined, 'Payment Date', date),
         ],
       ),
@@ -219,147 +305,268 @@ class _ResidentMaintenanceScreenState extends State<ResidentMaintenanceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: background,
+
+      // APP BAR
       appBar: AppBar(
-        backgroundColor: background,
+        backgroundColor: navy,
         foregroundColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 72,
         title: const Text(
-          'My Maintenance',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Maintenance',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+          ),
         ),
         actions: [
           IconButton(
             onPressed: loadRecords,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh',
           ),
+          const SizedBox(width: 8),
         ],
       ),
+
+      // BODY
       body: SafeArea(
         child: RefreshIndicator(
+          color: navy,
           onRefresh: loadRecords,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(17, 25, 17, 30),
             children: [
+              // HEADER BANNER
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(23),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
+                    colors: [navy, navyLight],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(28),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Maintenance Details',
+                          const Text(
+                            'Maintenance Payments',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            'View flat charges and payment status.',
-                            style: TextStyle(color: Colors.white70),
+
+                          const SizedBox(height: 13),
+
+                          const Text(
+                            'Manage flat charges and payment status.',
+                            style: TextStyle(
+                              color: Color(0xFFD2DCEB),
+                              fontSize: 15,
+                              height: 1.5,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.apartment, size: 44, color: Colors.white),
+
+                    const SizedBox(width: 12),
+
+                    Container(
+                      height: 85,
+                      width: 85,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: const Icon(
+                        Icons.account_balance_rounded,
+                        color: gold,
+                        size: 45,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
+
+              const SizedBox(height: 28),
+
+              // STATISTICS
+              Row(
+                children: [
+                  statCard(
+                    icon: Icons.receipt_long_rounded,
+                    count: records.length.toString(),
+                    title: 'Total Records',
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  statCard(
+                    icon: Icons.check_circle_outline_rounded,
+                    count: paidCount.toString(),
+                    title: 'Paid',
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  statCard(
+                    icon: Icons.pending_actions_rounded,
+                    count: pendingCount.toString(),
+                    title: 'Pending',
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 45),
+
+              // ALL RECORDS
+              const Text(
+                'All Records',
+                style: TextStyle(
+                  color: navy,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // SEARCH
               TextField(
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: navy, fontSize: 15),
                 onChanged: (value) {
                   setState(() => search = value);
                 },
                 decoration: InputDecoration(
-                  hintText: 'Search by Flat ID or status...',
-                  hintStyle: TextStyle(color: muted),
-                  prefixIcon: Icon(Icons.search, color: muted),
+                  hintText: 'Search by ID, amount, status or Flat ID',
+                  hintStyle: const TextStyle(color: muted, fontSize: 14),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: navy,
+                    size: 28,
+                  ),
                   filled: true,
-                  fillColor: surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 23,
+                    horizontal: 18,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(23),
+                    borderSide: const BorderSide(color: Color(0xFFE2E7EF)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(23),
+                    borderSide: const BorderSide(color: gold, width: 1.5),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+
+              const SizedBox(height: 25),
+
+              // LOADING
               if (loading)
                 const Padding(
-                  padding: EdgeInsets.all(35),
-                  child: Center(child: CircularProgressIndicator()),
+                  padding: EdgeInsets.all(45),
+                  child: Center(child: CircularProgressIndicator(color: navy)),
                 )
+              // ERROR
               else if (error != null)
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
-                    color: surface,
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
                     children: [
                       const Icon(
-                        Icons.cloud_off,
-                        color: Colors.orangeAccent,
-                        size: 42,
+                        Icons.cloud_off_rounded,
+                        color: Colors.orange,
+                        size: 45,
                       ),
                       const SizedBox(height: 12),
                       const Text(
                         'Could not load maintenance records',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       Text(
                         error!,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: muted),
+                        style: const TextStyle(color: muted),
                       ),
                       const SizedBox(height: 12),
-                      FilledButton(
+                      ElevatedButton(
                         onPressed: loadRecords,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: navy,
+                          foregroundColor: Colors.white,
+                        ),
                         child: const Text('Try Again'),
                       ),
                     ],
                   ),
                 )
+              // EMPTY
               else if (filteredRecords.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.all(30),
+                  padding: const EdgeInsets.all(35),
                   child: Column(
                     children: [
-                      Icon(Icons.receipt_long, size: 50, color: muted),
-                      const SizedBox(height: 12),
+                      const Icon(
+                        Icons.receipt_long_rounded,
+                        color: navy,
+                        size: 55,
+                      ),
+                      const SizedBox(height: 15),
                       Text(
                         search.isEmpty
                             ? 'No maintenance records found'
                             : 'No matching records found',
-                        style: TextStyle(color: muted),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: muted,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 )
+              // RECORDS
               else ...[
                 Text(
-                  '${filteredRecords.length} maintenance records',
-                  style: TextStyle(color: muted, fontWeight: FontWeight.w600),
+                  '${filteredRecords.length} Records Found',
+                  style: const TextStyle(
+                    color: muted,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                const SizedBox(height: 14),
+
+                const SizedBox(height: 15),
+
                 ...filteredRecords.map(maintenanceCard),
               ],
             ],
           ),
         ),
       ),
+
+      // NO ADD MAINTENANCE BUTTON
     );
   }
 }

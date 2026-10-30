@@ -17,7 +17,12 @@ class _ResidentScreenState extends State<ResidentScreen> {
   String? error;
   String searchText = '';
 
-  static const Color primary = Color(0xFF2563EB);
+  // PROFESSIONAL THEME
+  static const Color navy = Color(0xFF142E51);
+  static const Color navyLight = Color(0xFF244777);
+  static const Color gold = Color(0xFFD9B66F);
+  static const Color background = Color(0xFFF3F5FA);
+  static const Color muted = Color(0xFF8290A0);
 
   @override
   void initState() {
@@ -31,6 +36,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
     super.dispose();
   }
 
+  // LOAD RESIDENTS
   Future<void> loadResidents() async {
     setState(() {
       loading = true;
@@ -56,6 +62,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
     }
   }
 
+  // SEARCH
   List<Map<String, dynamic>> get filteredResidents {
     final query = searchText.toLowerCase().trim();
 
@@ -83,6 +90,30 @@ class _ResidentScreenState extends State<ResidentScreen> {
     );
   }
 
+  // FORM DECORATION
+  InputDecoration inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: muted),
+      prefixIcon: Icon(icon, color: gold),
+      filled: true,
+      fillColor: background,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE3E8EF)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: navy, width: 1.5),
+      ),
+    );
+  }
+
+  // ADD / EDIT RESIDENT
   Future<void> showResidentForm({Map<String, dynamic>? resident}) async {
     final isEdit = resident != null;
     final formKey = GlobalKey<FormState>();
@@ -90,17 +121,21 @@ class _ResidentScreenState extends State<ResidentScreen> {
     final nameController = TextEditingController(
       text: resident?['residentName']?.toString() ?? '',
     );
+
     final phoneController = TextEditingController(
       text: resident?['mobilenumber']?.toString() ?? '',
     );
+
     final emailController = TextEditingController(
       text: resident?['email']?.toString() ?? '',
     );
+
     final ageController = TextEditingController(
       text: resident?['age']?.toString() ?? '',
     );
 
     final flat = resident?['flat'];
+
     final flatIdController = TextEditingController(
       text: flat is Map
           ? (flat['flatId'] ?? flat['flatid'] ?? '').toString()
@@ -113,12 +148,22 @@ class _ResidentScreenState extends State<ResidentScreen> {
 
     await showDialog<void>(
       context: context,
-      barrierDismissible: !saving,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: Text(isEdit ? 'Edit Resident' : 'Add Resident'),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
+              title: Text(
+                isEdit ? 'Edit Resident' : 'Add Resident',
+                style: const TextStyle(
+                  color: navy,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 21,
+                ),
+              ),
               content: SizedBox(
                 width: 440,
                 child: SingleChildScrollView(
@@ -156,12 +201,14 @@ class _ResidentScreenState extends State<ResidentScreen> {
                           Icons.home_outlined,
                           keyboard: TextInputType.number,
                         ),
+
                         const SizedBox(height: 12),
+
                         DropdownButtonFormField<String>(
                           value: gender,
-                          decoration: const InputDecoration(
-                            labelText: 'Gender',
-                            border: OutlineInputBorder(),
+                          decoration: inputDecoration(
+                            'Gender',
+                            Icons.person_outline,
                           ),
                           items: ['Male', 'Female', 'Other']
                               .map(
@@ -177,12 +224,14 @@ class _ResidentScreenState extends State<ResidentScreen> {
                             }
                           },
                         ),
+
                         const SizedBox(height: 12),
+
                         DropdownButtonFormField<String>(
                           value: role,
-                          decoration: const InputDecoration(
-                            labelText: 'Role',
-                            border: OutlineInputBorder(),
+                          decoration: inputDecoration(
+                            'Role',
+                            Icons.badge_outlined,
                           ),
                           items: ['RESIDENT', 'ADMIN', 'OWNER', 'TENANT']
                               .map(
@@ -206,7 +255,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
               actions: [
                 TextButton(
                   onPressed: saving ? null : () => Navigator.pop(dialogContext),
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel', style: TextStyle(color: muted)),
                 ),
                 ElevatedButton(
                   onPressed: saving
@@ -215,6 +264,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
                           if (!formKey.currentState!.validate()) return;
 
                           final age = int.tryParse(ageController.text.trim());
+
                           final flatId = int.tryParse(
                             flatIdController.text.trim(),
                           );
@@ -267,11 +317,13 @@ class _ResidentScreenState extends State<ResidentScreen> {
                             if (!mounted) return;
 
                             Navigator.pop(dialogContext);
+
                             showMessage(
                               isEdit
                                   ? 'Resident updated successfully'
                                   : 'Resident added successfully',
                             );
+
                             await loadResidents();
                           } catch (e) {
                             setDialogState(() => saving = false);
@@ -279,8 +331,15 @@ class _ResidentScreenState extends State<ResidentScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primary,
+                    backgroundColor: navy,
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 13,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: saving
                       ? const SizedBox(
@@ -318,11 +377,8 @@ class _ResidentScreenState extends State<ResidentScreen> {
       child: TextFormField(
         controller: controller,
         keyboardType: keyboard,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: const OutlineInputBorder(),
-        ),
+        style: const TextStyle(color: navy),
+        decoration: inputDecoration(label, icon),
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
             return '$label is required';
@@ -333,21 +389,33 @@ class _ResidentScreenState extends State<ResidentScreen> {
     );
   }
 
+  // DELETE RESIDENT
   Future<void> confirmDelete(Map<String, dynamic> resident) async {
     final id = (resident['residentid'] as num).toInt();
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Resident?'),
-        content: Text('Delete ${resident['residentName'] ?? 'this resident'}?'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Delete Resident?',
+          style: TextStyle(color: navy, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Delete ${resident['residentName'] ?? 'this resident'}?',
+          style: const TextStyle(color: muted),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
@@ -359,6 +427,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
 
     try {
       await service.deleteResident(id);
+
       if (!mounted) return;
 
       showMessage('Resident deleted successfully');
@@ -369,294 +438,191 @@ class _ResidentScreenState extends State<ResidentScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final visibleResidents = filteredResidents;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FB),
-      appBar: AppBar(
-        backgroundColor: primary,
-        foregroundColor: Colors.white,
-        title: const Text(
-          'Resident Management',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            onPressed: loadResidents,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showResidentForm(),
-        backgroundColor: primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.person_add_alt_1),
-        label: const Text('Add Resident'),
-      ),
-      body: RefreshIndicator(
-        onRefresh: loadResidents,
-        child: ListView(
-          padding: const EdgeInsets.all(18),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF0284C7)],
-                ),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Community Residents',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 23,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 7),
-                        Text(
-                          'Manage resident profiles and details.',
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.groups_rounded,
-                    color: Colors.white,
-                    size: 48,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _statCard(
-                    'Total Residents',
-                    '${residents.length}',
-                    Icons.people_alt_outlined,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _statCard(
-                    'Showing',
-                    '${visibleResidents.length}',
-                    Icons.filter_list,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _searchController,
-              onChanged: (value) => setState(() => searchText = value),
-              decoration: InputDecoration(
-                hintText: 'Search name, email, mobile or ID',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: searchText.isEmpty
-                    ? null
-                    : IconButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => searchText = '');
-                        },
-                        icon: const Icon(Icons.close),
-                      ),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            if (loading)
-              const Padding(
-                padding: EdgeInsets.all(35),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (error != null)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.cloud_off, size: 42, color: Colors.red),
-                      const SizedBox(height: 8),
-                      const Text('Could not load residents'),
-                      const SizedBox(height: 8),
-                      SelectableText(
-                        error!,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      TextButton(
-                        onPressed: loadResidents,
-                        child: const Text('Try Again'),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else if (visibleResidents.isEmpty)
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(30),
-                  child: Column(
-                    children: [
-                      Icon(Icons.person_search, size: 48, color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text('No residents found'),
-                    ],
-                  ),
-                ),
-              )
-            else
-              ...visibleResidents.map((resident) {
-                final id = resident['residentid'] ?? '-';
-                final name = resident['residentName'] ?? 'Unnamed Resident';
-                final email = resident['email'] ?? 'No email';
-                final phone = resident['mobilenumber'] ?? 'No mobile';
-                final role = resident['role'] ?? 'Resident';
-
-                return Card(
-                  color: Colors.white,
-                  elevation: 0,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: const Color(0xFFDBEAFE),
-                          child: Text(
-                            name.toString().isNotEmpty
-                                ? name.toString()[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              color: primary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name.toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                'ID: $id • $role',
-                                style: const TextStyle(
-                                  color: primary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                email.toString(),
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                phone.toString(),
-                                style: const TextStyle(
-                                  color: Colors.black54,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              showResidentForm(resident: resident);
-                            } else if (value == 'delete') {
-                              confirmDelete(resident);
-                            } else if (value == 'details') {
-                              showResidentDetails(id);
-                            }
-                          },
-                          itemBuilder: (context) => const [
-                            PopupMenuItem(
-                              value: 'details',
-                              child: Text('View Details'),
-                            ),
-                            PopupMenuItem(value: 'edit', child: Text('Edit')),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-            const SizedBox(height: 80),
-          ],
-        ),
-      ),
-    );
-  }
-
+  // STATISTICS CARD
   Widget _statCard(String label, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE3E8EF)),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: primary),
-          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF5E2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Icon(icon, color: navy, size: 25),
+          ),
+          const SizedBox(height: 17),
           Text(
             value,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 31,
+              fontWeight: FontWeight.w900,
+              color: navy,
+            ),
           ),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.black54, fontSize: 12),
+          const SizedBox(height: 5),
+          Text(label, style: const TextStyle(color: muted, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  // RESIDENT CARD
+  Widget residentCard(Map<String, dynamic> resident) {
+    final id = resident['residentid'] ?? '-';
+    final name = resident['residentName'] ?? 'Unnamed Resident';
+    final email = resident['email'] ?? 'No email';
+    final phone = resident['mobilenumber'] ?? 'No mobile';
+    final role = resident['role'] ?? 'Resident';
+
+    final nameText = name.toString();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 13),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: const Color(0xFFE3E8EF)),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 26,
+            backgroundColor: const Color(0xFFFFF3DC),
+            child: Text(
+              nameText.isNotEmpty ? nameText[0].toUpperCase() : '?',
+              style: const TextStyle(
+                color: navy,
+                fontSize: 21,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 13),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nameText,
+                  style: const TextStyle(
+                    color: navy,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'ID: $id  •  $role',
+                  style: const TextStyle(
+                    color: Color(0xFFB18B45),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Row(
+                  children: [
+                    const Icon(Icons.email_outlined, color: muted, size: 14),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        email.toString(),
+                        style: const TextStyle(color: muted, fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    const Icon(Icons.phone_outlined, color: muted, size: 14),
+                    const SizedBox(width: 5),
+                    Text(
+                      phone.toString(),
+                      style: const TextStyle(color: muted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: navy),
+            onSelected: (value) {
+              if (value == 'edit') {
+                showResidentForm(resident: resident);
+              } else if (value == 'delete') {
+                confirmDelete(resident);
+              } else if (value == 'details') {
+                showResidentDetails(id);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'details',
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility_outlined, color: navy),
+                    SizedBox(width: 9),
+                    Text('View Details'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined, color: navy),
+                    SizedBox(width: 9),
+                    Text('Edit'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.red),
+                    SizedBox(width: 9),
+                    Text('Delete', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  // RESIDENT DETAILS
   Future<void> showResidentDetails(dynamic residentId) async {
     try {
       final resident = await service.getResidentById(
@@ -666,6 +632,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
       if (!mounted) return;
 
       final flat = resident['flat'];
+
       final flatLabel = flat is Map
           ? (flat['flatId'] ?? flat['flatid'] ?? 'Not available').toString()
           : 'Not available';
@@ -673,8 +640,13 @@ class _ResidentScreenState extends State<ResidentScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
           title: Text(
             resident['residentName']?.toString() ?? 'Resident Details',
+            style: const TextStyle(color: navy, fontWeight: FontWeight.w900),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -692,7 +664,7 @@ class _ResidentScreenState extends State<ResidentScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
+              child: const Text('Close', style: TextStyle(color: navy)),
             ),
           ],
         ),
@@ -704,8 +676,302 @@ class _ResidentScreenState extends State<ResidentScreen> {
 
   Widget _detail(String label, dynamic value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
-      child: Text('$label: ${value ?? '-'}'),
+      padding: const EdgeInsets.only(bottom: 11),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 95,
+            child: Text(
+              label,
+              style: const TextStyle(color: muted, fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              '${value ?? '-'}',
+              style: const TextStyle(color: navy, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // WELCOME BANNER
+  Widget residentBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [navy, navyLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(29),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.12),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Container(
+              padding: const EdgeInsets.all(17),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.09),
+                borderRadius: BorderRadius.circular(23),
+              ),
+              child: const Icon(Icons.groups_rounded, size: 55, color: gold),
+            ),
+          ),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                'Community Residents',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                'Manage resident profiles and details.',
+                style: TextStyle(
+                  color: Color(0xFFD4DFEF),
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // MAIN UI
+  @override
+  Widget build(BuildContext context) {
+    final visibleResidents = filteredResidents;
+
+    return Scaffold(
+      backgroundColor: background,
+
+      appBar: AppBar(
+        backgroundColor: navy,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        titleSpacing: 8,
+        title: const Text(
+          'Resident Management',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
+          ),
+        ),
+        actions: [
+          IconButton(
+            onPressed: loadResidents,
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh',
+          ),
+          const SizedBox(width: 7),
+        ],
+      ),
+
+      // ADD RESIDENT BUTTON
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => showResidentForm(),
+        backgroundColor: gold,
+        foregroundColor: navy,
+        elevation: 7,
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        label: const Text(
+          'Add Resident',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
+      ),
+
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: loadResidents,
+          color: navy,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(17, 20, 17, 110),
+            children: [
+              // BANNER
+              residentBanner(),
+
+              const SizedBox(height: 22),
+
+              // STATISTICS
+              Row(
+                children: [
+                  Expanded(
+                    child: _statCard(
+                      'Total Residents',
+                      '${residents.length}',
+                      Icons.people_alt_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: _statCard(
+                      'Showing',
+                      '${visibleResidents.length}',
+                      Icons.filter_list_rounded,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 27),
+
+              // DIRECTORY HEADING
+              const Text(
+                'Resident Directory',
+                style: TextStyle(
+                  color: navy,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              // SEARCH
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(19),
+                  border: Border.all(color: const Color(0xFFE3E8EF)),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() => searchText = value);
+                  },
+                  style: const TextStyle(color: navy, fontSize: 15),
+                  decoration: InputDecoration(
+                    hintText: 'Search name, email, mobile or ID',
+                    hintStyle: const TextStyle(color: muted, fontSize: 14),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: navy,
+                      size: 28,
+                    ),
+                    suffixIcon: searchText.isEmpty
+                        ? null
+                        : IconButton(
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => searchText = '');
+                            },
+                            icon: const Icon(Icons.close, color: muted),
+                          ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 22),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // LOADING
+              if (loading)
+                const Padding(
+                  padding: EdgeInsets.all(35),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: navy,
+                      strokeWidth: 3,
+                    ),
+                  ),
+                )
+              // ERROR
+              else if (error != null)
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.cloud_off_rounded,
+                        size: 45,
+                        color: Colors.redAccent,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Could not load residents',
+                        style: TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        error!,
+                        style: const TextStyle(fontSize: 12, color: muted),
+                      ),
+                      TextButton(
+                        onPressed: loadResidents,
+                        child: const Text('Try Again'),
+                      ),
+                    ],
+                  ),
+                )
+              // EMPTY
+              else if (visibleResidents.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(30),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.person_search_rounded,
+                        size: 52,
+                        color: gold,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        searchText.isEmpty
+                            ? 'No residents found'
+                            : 'No matching residents found',
+                        style: const TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              // RESIDENT LIST
+              else
+                ...visibleResidents.map(residentCard),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

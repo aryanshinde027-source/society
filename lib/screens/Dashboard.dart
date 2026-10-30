@@ -1,43 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:society_management/screens/ai%20complaintscreen.dart';
 import 'package:society_management/screens/ai.dart';
-
-import 'package:society_management/screens/maint.dart';
-
 import 'package:society_management/screens/Complaints.dart';
-
-import 'package:society_management/screens/notice.dart';
 import 'package:society_management/screens/residentfacilitybooking.dart';
 import 'package:society_management/screens/residentmaintenance.dart';
 import 'package:society_management/screens/residentnoticescreen.dart';
-
 import 'package:society_management/screens/visitors.dart';
-
 import 'package:society_management/screens/profile.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
-  static const Color background = Color(0xFF0B1120);
-  static const Color surface = Color(0xFF151F32);
-  static const Color primaryBlue = Color(0xFF60A5FA);
-  static const Color muted = Color(0xFF94A3B8);
+  static const Color navy = Color(0xFF142F50);
+  static const Color gold = Color(0xFFD6AC54);
+  static const Color background = Color(0xFFF3F6FC);
+  static const Color muted = Color(0xFF7C8CA5);
 
-  void _navigate(BuildContext context, Widget screen) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => screen));
+  void navigate(BuildContext context, Widget screen) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 
-  Future<void> _logout(BuildContext context) async {
+  Future<void> logout(BuildContext context) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: surface,
-        title: const Text('Logout', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to logout?',
-          style: TextStyle(color: muted),
-        ),
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -45,341 +35,391 @@ class DashboardScreen extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.redAccent),
-            ),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
 
-    if (confirm != true) return;
-
-    await FirebaseAuth.instance.signOut();
+    if (confirm == true) {
+      await FirebaseAuth.instance.signOut();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       backgroundColor: background,
+
+      // APP BAR
       appBar: AppBar(
-        backgroundColor: background,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
         elevation: 0,
+        toolbarHeight: 55,
+
         title: const Row(
           children: [
-            Icon(Icons.apartment_rounded, color: primaryBlue, size: 30),
+            Icon(Icons.apartment_rounded, color: gold, size: 29),
             SizedBox(width: 10),
             Text(
               'SocietyHub',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              style: TextStyle(
+                color: navy,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ],
         ),
+
         actions: [
           IconButton(
-            tooltip: 'My Profile',
-            onPressed: () {
-              _navigate(context, const ProfileScreen());
-            },
-            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => navigate(context, const ProfileScreen()),
+            icon: const Icon(
+              Icons.account_circle_outlined,
+              color: navy,
+              size: 27,
+            ),
           ),
+
           IconButton(
-            tooltip: 'Logout',
-            onPressed: () => _logout(context),
-            icon: const Icon(Icons.logout_rounded),
+            onPressed: () => logout(context),
+            icon: const Icon(Icons.logout_rounded, color: navy, size: 25),
           ),
-          const SizedBox(width: 5),
+
+          const SizedBox(width: 8),
         ],
       ),
 
+      // DASHBOARD BODY
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(18, 12, 18, 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(23),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF1D4ED8),
-                      Color(0xFF2563EB),
-                      Color(0xFF0F766E),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: const Icon(
-                        Icons.waving_hand_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      'Welcome Back!',
-                      style: TextStyle(color: Colors.white70, fontSize: 15),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      user?.displayName?.isNotEmpty == true
-                          ? user!.displayName!
-                          : 'Society Member',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Manage your society, residents, facilities '
-                      'and daily activities from one place.',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 13,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.verified_user_outlined,
-                            color: Colors.white,
-                            size: 17,
-                          ),
-                          SizedBox(width: 7),
-                          Text(
-                            'Society Management Portal',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+
+            final int columns = width >= 1100 ? 3 : 2;
+
+            final double cardRatio = columns == 3
+                ? 5.5
+                : width >= 600
+                ? 2.8
+                : 1.8;
+
+            final double horizontalPadding = width >= 900 ? 24 : 16;
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                16,
+                horizontalPadding,
+                25,
               ),
 
-              const SizedBox(height: 28),
-
-              // Section heading
-              const Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Quick Services',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                  // WELCOME BANNER
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(width >= 600 ? 25 : 22),
+
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF142F50), Color(0xFF1762A4)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
                       ),
+                      borderRadius: BorderRadius.circular(22),
                     ),
-                  ),
-                  Icon(Icons.grid_view_rounded, color: primaryBlue),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Select a service to get started',
-                style: TextStyle(color: muted, fontSize: 13),
-              ),
 
-              const SizedBox(height: 20),
-
-              // Service cards
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 0.91,
-                children: [
-                  _serviceCard(
-                    context,
-                    icon: Icons.account_balance_wallet_rounded,
-                    title: 'Maintenance',
-                    subtitle: 'Manage payments and dues',
-                    color: const Color(0xFFFBBF24),
-                    onTap: () =>
-                        _navigate(context, const ResidentMaintenanceScreen()),
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.report_problem_rounded,
-                    title: 'Complaints',
-                    subtitle: 'Track complaints',
-                    color: const Color(0xFFFB7185),
-                    onTap: () => _navigate(context, const ComplaintsScreen()),
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.campaign_rounded,
-                    title: 'Notices',
-                    subtitle: 'Society announcements',
-                    color: const Color(0xFFA78BFA),
-                    onTap: () =>
-                        _navigate(context, const ResidentNoticeScreen()),
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.directions_walk_rounded,
-                    title: 'Visitors',
-                    subtitle: 'Visitor records',
-                    color: const Color(0xFF22D3EE),
-                    onTap: () => _navigate(context, const VisitorsScreen()),
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.person_rounded,
-                    title: 'My Profile',
-                    subtitle: 'View profile details',
-                    color: const Color(0xFFF472B6),
-                    onTap: () => _navigate(context, const ProfileScreen()),
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.auto_awesome_rounded,
-                    title: 'AI Assistant',
-                    subtitle: 'Ask society-related questions',
-                    color: const Color(0xFFC084FC),
-                    onTap: () => _navigate(context, const AiChatScreen()),
-                  ),
-
-                  _serviceCard(
-                    context,
-                    icon: Icons.psychology_rounded,
-                    title: 'AI Complaint Help',
-                    subtitle: 'Get complaint suggestions',
-                    color: const Color(0xFFF472B6),
-                    onTap: () => _navigate(context, const AiComplaintScreen()),
-                  ),
-                  _serviceCard(
-                    context,
-                    icon: Icons.event_available_rounded,
-                    title: 'Facility Booking',
-                    subtitle: 'Manage bookings',
-                    color: const Color(0xFF34D399),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const ResidentFacilityBookingScreen(),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Icon(
+                            Icons.apartment_rounded,
+                            size: width >= 600 ? 115 : 90,
+                            color: Colors.white.withOpacity(0.08),
+                          ),
                         ),
-                      );
-                    },
+
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(11),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.13),
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.waving_hand_rounded,
+                                color: Color(0xFFFFC94D),
+                                size: 29,
+                              ),
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            const Text(
+                              'WELCOME BACK',
+                              style: TextStyle(
+                                color: Color(0xFFFFC94D),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            const Text(
+                              'Society Member',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            const Text(
+                              'Your community, managed in one place.',
+                              style: TextStyle(
+                                color: Color(0xFFD9E6F7),
+                                fontSize: 14,
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.13),
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.25),
+                                ),
+                              ),
+
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.verified_user_rounded,
+                                    color: Color(0xFFFFC94D),
+                                    size: 17,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Society Management Portal',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // QUICK SERVICES HEADING
+                  const Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Quick Services',
+                          style: TextStyle(
+                            color: navy,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+
+                      Icon(Icons.grid_view_rounded, color: gold, size: 25),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Everything you need to manage your community.',
+                    style: TextStyle(color: muted, fontSize: 14),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 8 MODULES - RESPONSIVE GRID
+                  GridView.count(
+                    crossAxisCount: columns,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 13,
+                    mainAxisSpacing: 13,
+                    childAspectRatio: cardRatio,
+
+                    children: [
+                      // 1. COMPLAINTS
+                      serviceCard(
+                        icon: Icons.report_problem_rounded,
+                        title: 'Complaints',
+                        subtitle: 'Track complaints',
+                        color: const Color(0xFFEB5055),
+                        onTap: () =>
+                            navigate(context, const ComplaintsScreen()),
+                      ),
+
+                      // 2. MAINTENANCE
+                      serviceCard(
+                        icon: Icons.account_balance_wallet_rounded,
+                        title: 'Maintenance',
+                        subtitle: 'Payments and dues',
+                        color: const Color(0xFFC58A22),
+                        onTap: () => navigate(
+                          context,
+                          const ResidentMaintenanceScreen(),
+                        ),
+                      ),
+
+                      // 3. NOTICES
+                      serviceCard(
+                        icon: Icons.campaign_rounded,
+                        title: 'Notices',
+                        subtitle: 'Society announcements',
+                        color: const Color(0xFF8652D5),
+                        onTap: () =>
+                            navigate(context, const ResidentNoticeScreen()),
+                      ),
+
+                      // 4. VISITORS
+                      serviceCard(
+                        icon: Icons.people_alt_rounded,
+                        title: 'Visitors',
+                        subtitle: 'Visitor records',
+                        color: const Color(0xFF139E88),
+                        onTap: () => navigate(context, const VisitorsScreen()),
+                      ),
+
+                      // 5. MY PROFILE
+                      serviceCard(
+                        icon: Icons.person_rounded,
+                        title: 'My Profile',
+                        subtitle: 'View profile details',
+                        color: const Color(0xFFD14B91),
+                        onTap: () => navigate(context, const ProfileScreen()),
+                      ),
+
+                      // 6. AI ASSISTANT
+                      serviceCard(
+                        icon: Icons.auto_awesome_rounded,
+                        title: 'AI Assistant',
+                        subtitle: 'Ask society-related questions',
+                        color: const Color(0xFF9364B9),
+                        onTap: () => navigate(context, const AiChatScreen()),
+                      ),
+
+                      // 7. AI COMPLAINT HELP
+                      serviceCard(
+                        icon: Icons.psychology_rounded,
+                        title: 'AI Complaint Help',
+                        subtitle: 'Get complaint suggestions',
+                        color: const Color(0xFFC05B91),
+                        onTap: () =>
+                            navigate(context, const AiComplaintScreen()),
+                      ),
+
+                      // 8. FACILITY BOOKING
+                      serviceCard(
+                        icon: Icons.event_available_rounded,
+                        title: 'Facility Booking',
+                        subtitle: 'Manage bookings',
+                        color: const Color(0xFF218A70),
+                        onTap: () => navigate(
+                          context,
+                          const ResidentFacilityBookingScreen(),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // BOTTOM INFORMATION CARD
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3DD),
+                      borderRadius: BorderRadius.circular(19),
+                      border: Border.all(color: const Color(0xFFF0D8A9)),
+                    ),
+
+                    child: const Row(
+                      children: [
+                        Icon(Icons.shield_rounded, color: gold, size: 37),
+
+                        SizedBox(width: 14),
+
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Everything in one place',
+                                style: TextStyle(
+                                  color: navy,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+
+                              SizedBox(height: 6),
+
+                              Text(
+                                'Access society services and manage daily activities through a single portal.',
+                                style: TextStyle(
+                                  color: muted,
+                                  fontSize: 12,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 25),
-
-              // Information card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: surface,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFF263449)),
-                ),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.shield_outlined, color: primaryBlue, size: 30),
-                    SizedBox(width: 13),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Everything in one place',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Access society services and manage '
-                            'daily activities through a single portal.',
-                            style: TextStyle(
-                              color: muted,
-                              fontSize: 12,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              Center(
-                child: Text(
-                  'SocietyHub • Society Management System',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: muted.withValues(alpha: 0.75),
-                    fontSize: 11,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  // Reusable service card
-  Widget _serviceCard(
-    BuildContext context, {
+  // REUSABLE HORIZONTAL SERVICE CARD
+
+  Widget serviceCard({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -387,54 +427,92 @@ class DashboardScreen extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: surface,
-      borderRadius: BorderRadius.circular(20),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(17),
+
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(17),
+
         child: Container(
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF263449)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(color: const Color(0xFFE9EDF4)),
+            boxShadow: [
+              BoxShadow(
+                color: navy.withOpacity(0.035),
+                blurRadius: 7,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+
+          child: Row(
             children: [
+              // ICON
               Container(
-                width: 49,
-                height: 49,
+                height: 43,
+                width: 43,
+
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(15),
+                  color: color.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(icon, color: color, size: 27),
+
+                child: Icon(icon, color: color, size: 23),
               ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
+
+              const SizedBox(width: 9),
+
+              // TITLE AND SUBTITLE
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: navy,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: muted, fontSize: 10),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 7),
-              Text(
-                subtitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: muted, fontSize: 11, height: 1.4),
-              ),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Icon(Icons.arrow_forward_rounded, size: 18, color: color),
-                ],
+
+              const SizedBox(width: 5),
+
+              // ARROW
+              Container(
+                height: 25,
+                width: 25,
+
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7E9),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+
+                child: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFFD39B36),
+                  size: 19,
+                ),
               ),
             ],
           ),

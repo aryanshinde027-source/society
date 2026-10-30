@@ -11,12 +11,16 @@ class NoticesScreen extends StatefulWidget {
 class _NoticesScreenState extends State<NoticesScreen> {
   final NoticeService service = NoticeService();
 
-  static const Color background = Color(0xFF0B1120);
-  static const Color surface = Color(0xFF151F32);
-  static const Color blue = Color(0xFF60A5FA);
-  static const Color muted = Color(0xFF94A3B8);
+  // PROFESSIONAL THEME
+  static const Color background = Color(0xFFF3F5FA);
+  static const Color surface = Colors.white;
+  static const Color navy = Color(0xFF142F52);
+  static const Color gold = Color(0xFFD9B66F);
+  static const Color muted = Color(0xFF8290A2);
+  static const Color blue = Color(0xFF285AA5);
 
   List<Map<String, dynamic>> notices = [];
+
   bool loading = true;
   String? error;
   String searchQuery = '';
@@ -28,6 +32,8 @@ class _NoticesScreenState extends State<NoticesScreen> {
   }
 
   Future<void> loadNotices() async {
+    if (!mounted) return;
+
     setState(() {
       loading = true;
       error = null;
@@ -59,7 +65,10 @@ class _NoticesScreenState extends State<NoticesScreen> {
 
   String formatDate(dynamic value) {
     final raw = value?.toString() ?? '';
-    if (raw.length != 8) return raw.isEmpty ? '-' : raw;
+
+    if (raw.length != 8) {
+      return raw.isEmpty ? '-' : raw;
+    }
 
     return '${raw.substring(6, 8)}/'
         '${raw.substring(4, 6)}/'
@@ -73,6 +82,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
 
     return notices.where((notice) {
       final title = (notice['title'] ?? '').toString().toLowerCase();
+
       final description = (notice['description'] ?? '')
           .toString()
           .toLowerCase();
@@ -81,24 +91,25 @@ class _NoticesScreenState extends State<NoticesScreen> {
     }).toList();
   }
 
+  // INPUT DECORATION
   InputDecoration inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
       labelStyle: const TextStyle(color: muted),
-      prefixIcon: Icon(icon, color: blue),
+      prefixIcon: Icon(icon, color: gold),
       filled: true,
       fillColor: background,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(13),
         borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: muted.withValues(alpha: 0.2)),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: blue),
+        borderRadius: BorderRadius.circular(13),
+        borderSide: const BorderSide(color: blue, width: 1.5),
       ),
     );
   }
@@ -114,7 +125,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
       controller: controller,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: navy),
       decoration: inputDecoration(label, icon),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
@@ -125,15 +136,18 @@ class _NoticesScreenState extends State<NoticesScreen> {
     );
   }
 
+  // PUBLISH / EDIT NOTICE
   Future<void> openNoticeForm({Map<String, dynamic>? notice}) async {
     final formKey = GlobalKey<FormState>();
 
     final titleController = TextEditingController(
       text: notice?['title']?.toString() ?? '',
     );
+
     final descriptionController = TextEditingController(
       text: notice?['description']?.toString() ?? '',
     );
+
     final societyController = TextEditingController(
       text:
           (notice?['society']?['societyid'] ??
@@ -153,11 +167,15 @@ class _NoticesScreenState extends State<NoticesScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(22),
+              ),
               title: Text(
                 isEditing ? 'Edit Notice' : 'Publish Notice',
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                  color: navy,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               content: SizedBox(
@@ -171,23 +189,29 @@ class _NoticesScreenState extends State<NoticesScreen> {
                         textField(
                           controller: titleController,
                           label: 'Notice title',
-                          icon: Icons.title,
+                          icon: Icons.title_rounded,
                         ),
+
                         const SizedBox(height: 14),
+
                         textField(
                           controller: descriptionController,
                           label: 'Notice description',
                           icon: Icons.description_outlined,
                           maxLines: 4,
                         ),
+
                         const SizedBox(height: 14),
+
                         textField(
                           controller: societyController,
                           label: 'Society ID',
                           icon: Icons.apartment_outlined,
                           keyboardType: TextInputType.number,
                         ),
-                        const SizedBox(height: 12),
+
+                        const SizedBox(height: 14),
+
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -205,15 +229,21 @@ class _NoticesScreenState extends State<NoticesScreen> {
                   onPressed: saving ? null : () => Navigator.pop(dialogContext),
                   child: const Text('Cancel', style: TextStyle(color: muted)),
                 ),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: blue,
-                    foregroundColor: background,
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: gold,
+                    foregroundColor: navy,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: saving
                       ? null
                       : () async {
-                          if (!formKey.currentState!.validate()) return;
+                          if (!formKey.currentState!.validate()) {
+                            return;
+                          }
 
                           final societyId = int.tryParse(
                             societyController.text.trim(),
@@ -251,10 +281,13 @@ class _NoticesScreenState extends State<NoticesScreen> {
                             }
 
                             if (!mounted) return;
+
                             Navigator.pop(dialogContext);
+
                             await loadNotices();
 
                             if (!mounted) return;
+
                             ScaffoldMessenger.of(this.context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -262,14 +295,19 @@ class _NoticesScreenState extends State<NoticesScreen> {
                                       ? 'Notice updated successfully'
                                       : 'Notice published successfully',
                                 ),
+                                backgroundColor: Colors.green,
                               ),
                             );
                           } catch (e) {
                             setDialogState(() => saving = false);
 
                             if (!mounted) return;
+
                             ScaffoldMessenger.of(this.context).showSnackBar(
-                              SnackBar(content: Text('Request failed: $e')),
+                              SnackBar(
+                                content: Text('Request failed: $e'),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                           }
                         },
@@ -277,9 +315,15 @@ class _NoticesScreenState extends State<NoticesScreen> {
                       ? const SizedBox(
                           height: 18,
                           width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: navy,
+                          ),
                         )
-                      : Text(isEditing ? 'Save Changes' : 'Publish'),
+                      : Text(
+                          isEditing ? 'Save Changes' : 'Publish',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ],
             );
@@ -293,6 +337,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
     societyController.dispose();
   }
 
+  // DELETE NOTICE
   Future<void> deleteNotice(Map<String, dynamic> notice) async {
     final noticeId = (notice['noticeid'] as num).toInt();
 
@@ -300,9 +345,10 @@ class _NoticesScreenState extends State<NoticesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Delete Notice?',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: navy, fontWeight: FontWeight.bold),
         ),
         content: const Text(
           'This notice will be permanently deleted.',
@@ -313,8 +359,11 @@ class _NoticesScreenState extends State<NoticesScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel', style: TextStyle(color: muted)),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
@@ -326,34 +375,54 @@ class _NoticesScreenState extends State<NoticesScreen> {
 
     try {
       await service.deleteNotice(noticeId);
+
       await loadNotices();
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Notice deleted successfully')),
+        const SnackBar(
+          content: Text('Notice deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Delete failed: $e')));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Delete failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
+  // NOTICE CARD
   Widget noticeCard(Map<String, dynamic> notice) {
     final title = notice['title']?.toString() ?? 'Untitled notice';
+
     final description =
         notice['description']?.toString() ?? 'No description available';
+
     final id = notice['noticeid']?.toString() ?? '-';
+
     final date = formatDate(notice['noticeDate']);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: const Color(0xFFE6EAF0)),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.045),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,18 +430,21 @@ class _NoticesScreenState extends State<NoticesScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(11),
+                height: 47,
+                width: 47,
                 decoration: BoxDecoration(
-                  color: blue.withValues(alpha: 0.13),
-                  borderRadius: BorderRadius.circular(13),
+                  color: const Color(0xFFFFF5DF),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.campaign_rounded,
-                  color: blue,
-                  size: 26,
+                  color: gold,
+                  size: 27,
                 ),
               ),
+
               const SizedBox(width: 12),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,8 +452,8 @@ class _NoticesScreenState extends State<NoticesScreen> {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        color: navy,
+                        fontWeight: FontWeight.w800,
                         fontSize: 16,
                       ),
                     ),
@@ -393,9 +465,10 @@ class _NoticesScreenState extends State<NoticesScreen> {
                   ],
                 ),
               ),
+
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, color: muted),
-                color: surface,
+                color: Colors.white,
                 onSelected: (value) {
                   if (value == 'edit') {
                     openNoticeForm(notice: notice);
@@ -406,44 +479,67 @@ class _NoticesScreenState extends State<NoticesScreen> {
                 itemBuilder: (context) => const [
                   PopupMenuItem(
                     value: 'edit',
-                    child: Text('Edit', style: TextStyle(color: Colors.white)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, color: blue),
+                        SizedBox(width: 9),
+                        Text('Edit', style: TextStyle(color: navy)),
+                      ],
+                    ),
                   ),
                   PopupMenuItem(
                     value: 'delete',
-                    child: Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.redAccent),
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: Colors.redAccent),
+                        SizedBox(width: 9),
+                        Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ],
           ),
+
           const SizedBox(height: 15),
+
           Text(
             description,
-            style: const TextStyle(color: muted, fontSize: 14, height: 1.5),
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 14,
+              height: 1.6,
+            ),
           ),
+
           const SizedBox(height: 16),
-          Divider(color: muted.withValues(alpha: 0.16)),
+
+          const Divider(color: Color(0xFFEDF0F5), height: 1),
+
+          const SizedBox(height: 13),
+
           Row(
             children: [
-              const Icon(Icons.calendar_month_outlined, size: 17, color: blue),
+              const Icon(Icons.calendar_month_outlined, size: 17, color: gold),
               const SizedBox(width: 8),
               Text(date, style: const TextStyle(color: muted, fontSize: 12)),
               const Spacer(),
               const Icon(
                 Icons.notifications_active_outlined,
                 size: 17,
-                color: blue,
+                color: gold,
               ),
               const SizedBox(width: 5),
               const Text(
                 'Announcement',
                 style: TextStyle(
-                  color: blue,
+                  color: navy,
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -453,146 +549,265 @@ class _NoticesScreenState extends State<NoticesScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      appBar: AppBar(
-        backgroundColor: background,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Society Notices',
-          style: TextStyle(fontWeight: FontWeight.bold),
+  // SOCIETY UPDATES BANNER
+  Widget societyBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF122D50), Color(0xFF203F6D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: loadNotices,
-            icon: const Icon(Icons.refresh_rounded),
+        borderRadius: BorderRadius.circular(29),
+        boxShadow: [
+          BoxShadow(
+            color: navy.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-          const SizedBox(width: 6),
         ],
       ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: 0,
+            top: 5,
+            child: Icon(
+              Icons.campaign_rounded,
+              size: 125,
+              color: Colors.white.withOpacity(0.07),
+            ),
+          ),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // LABEL
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 11,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: gold.withOpacity(0.55)),
+                ),
+                child: const Text(
+                  'S O C I E T Y  U P D A T E S',
+                  style: TextStyle(
+                    color: gold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 39),
+
+              const Text(
+                'Stay Informed.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 29,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 13),
+
+              const Text(
+                'Important announcements from your society, all in one place.',
+                style: TextStyle(
+                  color: Color(0xFFD4DFEF),
+                  fontSize: 15,
+                  height: 1.65,
+                ),
+              ),
+
+              const SizedBox(height: 34),
+
+              Row(
+                children: [
+                  const Icon(
+                    Icons.notifications_active_outlined,
+                    color: gold,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${notices.length} total notices',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // MAIN SCREEN
+  @override
+  Widget build(BuildContext context) {
+    final visibleNotices = filteredNotices;
+
+    return Scaffold(
+      backgroundColor: background,
+
+      // APP BAR
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: navy,
+        elevation: 0,
+        surfaceTintColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, size: 27),
+          onPressed: () => Navigator.pop(context),
+        ),
+        titleSpacing: 8,
+        title: const Text(
+          'Notice Board',
+          style: TextStyle(
+            color: navy,
+            fontSize: 23,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+
+      // PUBLISH BUTTON
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openNoticeForm(),
-        backgroundColor: blue,
-        foregroundColor: background,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Publish Notice'),
+        backgroundColor: gold,
+        foregroundColor: navy,
+        elevation: 7,
+        icon: const Icon(Icons.add_rounded, size: 28),
+        label: const Text(
+          'Publish Notice',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15),
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(19)),
       ),
+
+      // BODY
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: loadNotices,
+          color: navy,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 110),
             children: [
+              // BANNER
+              societyBanner(),
+
+              const SizedBox(height: 26),
+
+              // SEARCH
               Container(
-                padding: const EdgeInsets.all(21),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1D4ED8), Color(0xFF4338CA)],
-                  ),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Stay Informed',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Important updates from your society, '
-                            'all in one place.',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              height: 1.5,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Icon(
-                      Icons.notifications_active_rounded,
-                      size: 45,
-                      color: Colors.white,
-                    ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE3E8EF)),
+                  boxShadow: [
+                    BoxShadow(color: navy.withOpacity(0.025), blurRadius: 10),
                   ],
                 ),
+                child: TextField(
+                  style: const TextStyle(color: navy, fontSize: 16),
+                  onChanged: (value) {
+                    setState(() => searchQuery = value);
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search notices...',
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF8793A2),
+                      fontSize: 16,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: navy,
+                      size: 29,
+                    ),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            onPressed: () {
+                              setState(() => searchQuery = '');
+                            },
+                            icon: const Icon(Icons.close, color: muted),
+                          )
+                        : null,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 23,
+                      horizontal: 15,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 26),
+
+              // RECENT NOTICES
               Row(
                 children: [
                   const Expanded(
                     child: Text(
-                      'Latest Notices',
+                      'Recent Notices',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        color: navy,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                   ),
                   Text(
-                    '${notices.length} total',
-                    style: const TextStyle(color: muted),
+                    '${visibleNotices.length} found',
+                    style: const TextStyle(color: muted, fontSize: 14),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                style: const TextStyle(color: Colors.white),
-                onChanged: (value) {
-                  setState(() => searchQuery = value);
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search notices...',
-                  hintStyle: const TextStyle(color: muted),
-                  prefixIcon: const Icon(Icons.search, color: muted),
-                  filled: true,
-                  fillColor: surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
+
+              const SizedBox(height: 19),
+
+              // LOADING
               if (loading)
                 const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
+                  padding: EdgeInsets.all(35),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: navy,
+                      strokeWidth: 3,
+                    ),
+                  ),
                 )
+              // ERROR
               else if (error != null)
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
-                    color: surface,
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Column(
                     children: [
                       const Icon(
                         Icons.cloud_off_rounded,
-                        color: Colors.orangeAccent,
-                        size: 42,
+                        size: 45,
+                        color: Colors.orange,
                       ),
                       const SizedBox(height: 12),
                       const Text(
                         'Unable to load notices',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: navy,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -603,35 +818,49 @@ class _NoticesScreenState extends State<NoticesScreen> {
                         style: const TextStyle(color: muted),
                       ),
                       const SizedBox(height: 12),
-                      FilledButton(
+                      ElevatedButton.icon(
                         onPressed: loadNotices,
-                        child: const Text('Try Again'),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: navy,
+                          foregroundColor: Colors.white,
+                        ),
                       ),
                     ],
                   ),
                 )
-              else if (filteredNotices.isEmpty)
-                Padding(
+              // EMPTY
+              else if (visibleNotices.isEmpty)
+                Container(
                   padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                   child: Column(
                     children: [
                       const Icon(
                         Icons.notifications_none_rounded,
-                        size: 54,
-                        color: muted,
+                        size: 55,
+                        color: gold,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         searchQuery.isEmpty
                             ? 'No notices available'
                             : 'No matching notices',
-                        style: const TextStyle(color: muted),
+                        style: const TextStyle(
+                          color: navy,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 )
+              // NOTICE LIST
               else
-                ...filteredNotices.map(noticeCard),
+                ...visibleNotices.map(noticeCard),
             ],
           ),
         ),

@@ -12,7 +12,7 @@ class SecretaryFacilityManagementScreen extends StatefulWidget {
 
 class _SecretaryFacilityManagementScreenState
     extends State<SecretaryFacilityManagementScreen> {
-  static const String baseUrl = 'http://localhost:8080';
+  static const String baseUrl = 'http://172.31.141.202:8080';
 
   // Android emulator:
   // static const String baseUrl = 'http://10.0.2.2:8080';
