@@ -430,7 +430,7 @@ class _MaintainceScreenState extends State<MaintainceScreen> {
     }
   }
 
-  // SUMMARY CARD
+  // SUMMARY CARD - OVERFLOW FIXED
   Widget summaryCard({
     required IconData icon,
     required int count,
@@ -438,8 +438,8 @@ class _MaintainceScreenState extends State<MaintainceScreen> {
   }) {
     return Expanded(
       child: Container(
-        height: 145,
-        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 15),
+        height: 165,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
         decoration: BoxDecoration(
           color: surface,
           borderRadius: BorderRadius.circular(22),
@@ -454,6 +454,7 @@ class _MaintainceScreenState extends State<MaintainceScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
               height: 47,
@@ -464,7 +465,9 @@ class _MaintainceScreenState extends State<MaintainceScreen> {
               ),
               child: Icon(icon, color: navy, size: 25),
             ),
-            const Spacer(),
+
+            const SizedBox(height: 18),
+
             Text(
               count.toString(),
               style: const TextStyle(
@@ -473,13 +476,15 @@ class _MaintainceScreenState extends State<MaintainceScreen> {
                 fontSize: 27,
               ),
             ),
+
             const SizedBox(height: 5),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                title,
-                style: const TextStyle(color: muted, fontSize: 12),
-              ),
+
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              softWrap: true,
+              style: const TextStyle(color: muted, fontSize: 12, height: 1.2),
             ),
           ],
         ),

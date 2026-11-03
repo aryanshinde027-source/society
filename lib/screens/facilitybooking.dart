@@ -10,8 +10,6 @@ class FacilityScreen extends StatefulWidget {
 }
 
 class _FacilityScreenState extends State<FacilityScreen> {
-  // Phone वर चालवत असशील तर laptop चा actual IPv4 address वापर.
-  // Android emulator साठी 10.0.2.2 वापर.
   static const String baseUrl = 'http://172.31.141.202:8080';
 
   final TextEditingController _searchController = TextEditingController();
@@ -43,8 +41,6 @@ class _FacilityScreenState extends State<FacilityScreen> {
     });
 
     try {
-      // सर्व facilities साठी backend मध्ये असलेला
-      // योग्य GET endpoint वापर.
       final response = await http.get(Uri.parse('$baseUrl/facility/getAll'));
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
